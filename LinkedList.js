@@ -76,7 +76,7 @@ export default class LinkedList {
   }
   find(value) {
     if (this.list.value === value) {
-      return 1;
+      return 0;
     }
     if (this.list.next === null) {
       return null;
