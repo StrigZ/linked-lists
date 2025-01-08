@@ -11,5 +11,5 @@ list.prepend("snake");
 list.append("turtle");
 
 console.log(list.toString());
-list.removeAt(3);
-console.log(list.toString());
+
+console.log(list.insertAt("as", 77));

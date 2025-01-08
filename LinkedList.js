@@ -47,6 +47,12 @@ export default class LinkedList {
     return this.list.next.tail();
   }
   at(index) {
+    if (index < 0) {
+      return "Index can't be negative";
+    }
+    if (this.list.next === null) {
+      return "Out of range";
+    }
     if (index === 0) {
       return this.list;
     }
@@ -85,6 +91,9 @@ export default class LinkedList {
     return this.list.value + " -> " + this.list.next.toString();
   }
   insertAt(value, index) {
+    if (index > this.size()) {
+      return "Out of range";
+    }
     const targetNode = this.at(index);
     const prevToTargetNode = this.at(index - 1);
     const nextNodes = { ...targetNode };
@@ -93,6 +102,9 @@ export default class LinkedList {
     prevToTargetNode.next.list.next = new LinkedList(nextNodes);
   }
   removeAt(index) {
+    if (index > this.size()) {
+      return "Out of range";
+    }
     const prevToTargetNode = this.at(index - 1);
     const targetNode = this.at(index);
     const nextNodes = { ...targetNode.next.list };
