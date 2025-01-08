@@ -75,11 +75,15 @@ export default class LinkedList {
     return this.list.next.contains(value);
   }
   find(value) {
+    if (this.contains(value)) {
+      return this._find(value);
+    }
+
+    return null;
+  }
+  _find(value) {
     if (this.list.value === value) {
       return 0;
-    }
-    if (this.list.next === null) {
-      return null;
     }
 
     return 1 + this.list.next.find(value);
