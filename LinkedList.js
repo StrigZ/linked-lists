@@ -1,178 +1,217 @@
 import Node from "./Node.js";
 
 export default class LinkedList {
-  constructor(linkedList = {}) {
-    this.headNode = linkedList;
+  constructor(headNode = {}) {
+    this.headNode = headNode;
   }
 
+  isEmpty() {
+    return Object.keys(this.headNode).length === 0;
+  }
   append(value) {
-    if (this.isEmpty) {
+    if (this.isEmpty()) {
       this.headNode = new Node(value);
       return;
     }
 
-    if (this.headNode.next !== null) {
-      this.headNode.next.append(value);
-    } else {
-      const newNode = new LinkedList(new Node(value));
-      this.headNode.next = newNode;
+    let pointer = this.headNode;
+    while (pointer.next !== null) {
+      pointer = pointer.next;
     }
+    pointer.next = new Node(value);
   }
   prepend(value) {
-    if (this.isEmpty) {
+    if (this.isEmpty()) {
       this.headNode = new Node(value);
       return;
     }
 
-    const clone = { ...this.headNode };
-
-    this.headNode.value = value;
-    this.headNode.next = new LinkedList(clone);
+    this.headNode = new Node(value, this.headNode);
   }
   size() {
-    if (this.isEmpty) {
+    if (this.isEmpty()) {
       return 0;
     }
-    if (this.headNode.next === null) {
-      return 1;
+
+    let size = 1;
+    let pointer = this.headNode;
+    while (pointer.next !== null) {
+      size++;
+      pointer = pointer.next;
     }
-    return 1 + this.headNode.next.size();
+    return size;
   }
   head() {
     return this.headNode;
   }
   tail() {
-    if (this.headNode.next === null) {
-      return this.headNode;
+    if (this.isEmpty()) {
+      return {};
     }
-    return this.headNode.next.tail();
+
+    let pointer = this.headNode;
+    while (pointer.next !== null) {
+      pointer = pointer.next;
+    }
+    return pointer;
   }
   at(index) {
-    if (index === 0) {
-      return this.headNode;
+    this._validateIndex(index);
+    let pointer = this.headNode;
+
+    while (pointer.next !== null && index > 0) {
+      index--;
+      pointer = pointer.next;
     }
-    if (index < 0) {
-      throw new Error("Index can't be negative");
-    }
-    if (this.headNode.next === null) {
-      throw new Error("Out of range");
-    }
-    return this.headNode.next.at(index - 1);
+    return pointer;
   }
   pop() {
     if (this.size() === 0) {
-      throw new Error("List is empty.");
+      return;
     }
     if (this.size() === 1) {
       this.headNode = {};
       return;
     }
-    if (this.headNode.next.headNode.next === null) {
-      this.headNode.next = null;
-      return;
+
+    let pointer = this.headNode;
+    while (pointer.next.next !== null) {
+      pointer = pointer.next;
     }
-    return this.headNode.next.pop();
+    pointer.next = null;
   }
   contains(value) {
-    if (this.headNode.value === value) {
-      return true;
-    }
-    if (this.headNode.next === null) {
+    if (this.isEmpty()) {
       return false;
     }
-    return this.headNode.next.contains(value);
+
+    let pointer = this.headNode;
+    let hasValue = pointer.value === value;
+    while (pointer.next !== null && !hasValue) {
+      pointer = pointer.next;
+      if (pointer.value === value) {
+        hasValue = true;
+      }
+    }
+    return hasValue;
   }
   findIndex(value) {
-    if (this.contains(value)) {
-      return this._findIndex(value);
+    if (this.isEmpty()) {
+      return null;
     }
 
-    return null;
-  }
-  _findIndex(value) {
-    if (this.headNode.value === value) {
-      return 0;
+    let pointer = this.headNode;
+    let count = 0;
+    let hasFoundValue = pointer.value === value;
+    while (pointer.next !== null && !hasFoundValue) {
+      pointer = pointer.next;
+      hasFoundValue = pointer.value === value;
+      count++;
     }
-
-    return 1 + this.headNode.next.findIndex(value);
+    return hasFoundValue ? count : null;
   }
   find(callback) {
-    /*
-    use callback on current head
-    
-    if callback return true
-      return head
-    else
-      if there is next node
-        pass callback to the next node
-      else 
-      return null
-    */
-    if (callback(this.headNode)) {
-      return this.headNode;
-    }
-    if (this.headNode.next === null) {
+    if (this.isEmpty()) {
       return null;
     }
-    return this.headNode.next.find(callback);
+
+    let pointer = this.headNode;
+    let hasFoundValue = callback(this.headNode);
+    while (pointer.next !== null && !hasFoundValue) {
+      pointer = pointer.next;
+      hasFoundValue = callback(this.headNode);
+    }
+    return hasFoundValue ? pointer : null;
   }
   toString() {
-    if (this.isEmpty) {
+    if (this.isEmpty()) {
       return null;
     }
-    if (this.headNode.next === null) {
-      return this.headNode.value;
+
+    let pointer = this.headNode;
+    let returnString = "";
+    while (pointer !== null) {
+      returnString += `${pointer.value}${pointer.next !== null ? " -> " : ""}`;
+      pointer = pointer.next;
     }
-    return this.headNode.value + " -> " + this.headNode.next.toString();
+    return returnString;
   }
   updateAt(value, index) {
-    if (index === 0) {
-      this.headNode.value = value;
-      return;
+    this._validateIndex(index);
+    let pointer = this.headNode;
+    while (pointer.next !== null && index > 0) {
+      index--;
+      pointer = pointer.next;
     }
-    return this.headNode.next.updateAt(value, index - 1);
+    pointer.value = value;
   }
   insertAt(value, index) {
-    if (index > this.size()) {
-      throw new Error("Out of range");
+    if (this.isEmpty || index === 0) {
+      this.prepend(value);
+      return;
     }
-    const targetNode = this.at(index);
-    const prevToTargetNode = this.at(index - 1);
-    const nextNodes = { ...targetNode };
+    this._validateIndex(index);
 
-    prevToTargetNode.next = new LinkedList(new Node(value));
-    prevToTargetNode.next.headNode.next = new LinkedList(nextNodes);
+    let pointer = this.headNode;
+    let nodeBeforeTarget = null;
+    while (pointer.next !== null && index > 0) {
+      if (index - 1 === 0) {
+        nodeBeforeTarget = pointer;
+      }
+      index--;
+      pointer = pointer.next;
+    }
+    nodeBeforeTarget.next = new Node(value, pointer);
   }
   removeAt(index) {
-    if (index > this.size()) {
-      throw new Error("Out of range");
+    this._validateIndex(index);
+    if (index === 0 && this.headNode.next === null) {
+      this.clear();
+      return;
     }
-    if (index === 0) {
-      if (this.headNode.next === null) {
-        this.headNode = {};
-      } else {
-        this.headNode = this.headNode.next.headNode;
+
+    let pointer = this.headNode;
+    let nodeBeforeTarget = null;
+    while (pointer.next !== null && index > 0) {
+      if (index - 1 === 0) {
+        nodeBeforeTarget = pointer;
       }
+      index--;
+      pointer = pointer.next;
+    }
+
+    if (nodeBeforeTarget === null) {
+      this.headNode = this.headNode.next;
     } else {
-      const prevToTargetNode = this.at(index - 1);
-      const targetNode = this.at(index);
-      if (targetNode.next !== null) {
-        const nextNodes = { ...targetNode.next };
-        prevToTargetNode.next = new LinkedList(nextNodes);
-      } else {
-        this.pop();
-      }
+      nodeBeforeTarget.next = pointer.next;
     }
   }
-
   values() {
-    if (this.headNode.next === null) {
-      return [this.headNode.value];
+    if (this.isEmpty()) {
+      return [];
     }
-    return [this.headNode.value].concat(this.headNode.next.values());
+
+    let pointer = this.headNode;
+    const values = [];
+    while (pointer !== null) {
+      values.push(pointer.value);
+      pointer = pointer.next;
+    }
+    return values;
+  }
+  clear() {
+    this.headNode = {};
   }
 
-  get isEmpty() {
-    return Object.keys(this.headNode).length === 0;
+  _validateIndex(index) {
+    if (index < 0) {
+      throw new Error("Index can't be negative");
+    }
+    if (index > this.size() - 1) {
+      throw new Error("Index is out of range");
+    }
+    if (typeof index !== "number") {
+      throw new Error("Index must be a number");
+    }
   }
 }
